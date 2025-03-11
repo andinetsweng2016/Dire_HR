@@ -20,17 +20,15 @@ from django.contrib.messages import constants as messages
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-# Quick-start development settings - unsuitable for production
-# See https://docs.djangoproject.com/en/4.1/howto/deployment/checklist/
-
+# Load environment variables
 env = environ.Env(
     DEBUG=(bool, True),
     SECRET_KEY=(
         str,
         "django-insecure-j8op9)1q8$1&0^s&p*_0%d#pr@w9qj@1o=3#@d=a(^@9@zd@%j",
     ),
-    ALLOWED_HOSTS=(list, ["hr.diremfi.com","localhost"]),
-    CSRF_TRUSTED_ORIGINS=(list, ["http://localhost:8000","https://hr.diremfi.com"]),
+    ALLOWED_HOSTS=(list, ["hr.diremfi.com", "localhost"]),
+    CSRF_TRUSTED_ORIGINS=(list, ["https://hr.diremfi.com"]),
 )
 
 env.read_env(os.path.join(BASE_DIR, ".env"), overwrite=True)
@@ -41,10 +39,13 @@ SECRET_KEY = env("SECRET_KEY")
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = env("DEBUG")
 
-ALLOWED_HOSTS = env("ALLOWED_HOSTS")
+# Allowed hosts
+ALLOWED_HOSTS = env.list("ALLOWED_HOSTS", default=["hr.diremfi.com", "localhost"])
+
+# CSRF Trusted Origins
+CSRF_TRUSTED_ORIGINS = env.list("CSRF_TRUSTED_ORIGINS", default=["https://hr.diremfi.com"])
 
 # Application definition
-
 INSTALLED_APPS = [
     "django.contrib.admin",
     "django.contrib.auth",
@@ -69,10 +70,9 @@ INSTALLED_APPS = [
     "widget_tweaks",
     "django_apscheduler",
 ]
+
 APSCHEDULER_DATETIME_FORMAT = "N j, Y, f:s a"
-
 APSCHEDULER_RUN_NOW_TIMEOUT = 25  # Seconds
-
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
@@ -93,9 +93,7 @@ ROOT_URLCONF = "hrms.urls"
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS": [
-            BASE_DIR / "templates",
-        ],
+        "DIRS": [BASE_DIR / "templates"],
         "APP_DIRS": True,
         "OPTIONS": {
             "context_processors": [
@@ -110,25 +108,14 @@ TEMPLATES = [
 
 WSGI_APPLICATION = "hrms.wsgi.application"
 
-
-# Database
-# https://docs.djangoproject.com/en/4.1/ref/settings/#databases
-
+# Database Configuration
 if env("DATABASE_URL", default=None):
-    DATABASES = {
-        "default": env.db(),
-    }
+    DATABASES = {"default": env.db()}
 else:
     DATABASES = {
         "default": {
             "ENGINE": env("DB_ENGINE", default="django.db.backends.sqlite3"),
-            "NAME": env(
-                "DB_NAME",
-                default=os.path.join(
-                    BASE_DIR,
-                    "TestDB_Hrms.sqlite3",
-                ),
-            ),
+            "NAME": env("DB_NAME", default=os.path.join(BASE_DIR, "TestDB_Hrms.sqlite3")),
             "USER": env("DB_USER", default=""),
             "PASSWORD": env("DB_PASSWORD", default=""),
             "HOST": env("DB_HOST", default=""),
@@ -137,43 +124,23 @@ else:
     }
 
 # Password validation
-# https://docs.djangoproject.com/en/4.1/ref/settings/#auth-password-validators
-
 AUTH_PASSWORD_VALIDATORS = [
-    {
-        "NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator",
-    },
-    {
-        "NAME": "django.contrib.auth.password_validation.MinimumLengthValidator",
-    },
-    {
-        "NAME": "django.contrib.auth.password_validation.CommonPasswordValidator",
-    },
-    {
-        "NAME": "django.contrib.auth.password_validation.NumericPasswordValidator",
-    },
+    {"NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator"},
+    {"NAME": "django.contrib.auth.password_validation.MinimumLengthValidator"},
+    {"NAME": "django.contrib.auth.password_validation.CommonPasswordValidator"},
+    {"NAME": "django.contrib.auth.password_validation.NumericPasswordValidator"},
 ]
 
-
-# Static files (CSS, JavaScript, Images)
-# https://docs.djangoproject.com/en/4.1/howto/static-files/
-
+# Static files
 STATIC_URL = "static/"
 STATIC_ROOT = BASE_DIR / "staticfiles"
-
-STATICFILES_DIRS = [
-    BASE_DIR / "static",
-]
-
+STATICFILES_DIRS = [BASE_DIR / "static"]
 STATICFILES_STORAGE = "whitenoise.storage.CompressedStaticFilesStorage"
 
 MEDIA_URL = "/media/"
 MEDIA_ROOT = os.path.join(BASE_DIR, "media/")
-# Default primary key field type
-# https://docs.djangoproject.com/en/4.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
-
 
 MESSAGE_TAGS = {
     messages.DEBUG: "oh-alert--warning",
@@ -183,52 +150,39 @@ MESSAGE_TAGS = {
     messages.ERROR: "oh-alert--danger",
 }
 
-
-CSRF_TRUSTED_ORIGINS = env("CSRF_TRUSTED_ORIGINS")
-
+# Authentication
 LOGIN_URL = "/login"
 
-
 SIMPLE_HISTORY_REVERT_DISABLED = True
-
 
 DJANGO_NOTIFICATIONS_CONFIG = {
     "USE_JSONFIELD": True,
     "SOFT_DELETE": True,
     "USE_WATCHED": True,
     "NOTIFICATIONS_STORAGE": "notifications.storage.DatabaseStorage",
-    "TEMPLATE": "notifications.html",  # Add this line
+    "TEMPLATE": "notifications.html",
 }
 
 X_FRAME_OPTIONS = "SAMEORIGIN"
 
-LANGUAGES = (
+LANGUAGES = [
     ("en", "English (US)"),
     ("de", "Deutsche"),
     ("es", "Español"),
     ("fr", "France"),
     ("ar", "عربى"),
-)
-
-LOCALE_PATHS = [
-    join(BASE_DIR, "hrms", "locale"),
 ]
 
+LOCALE_PATHS = [join(BASE_DIR, "hrms", "locale")]
 
 # Internationalization
-# https://docs.djangoproject.com/en/4.1/topics/i18n/
-
 LANGUAGE_CODE = "en-us"
-
-TIME_ZONE = env("TIME_ZONE", default="Asia/Kolkata")
-
+TIME_ZONE = env("TIME_ZONE", default="Africa/Addis_Ababa")
 USE_I18N = True
-
 USE_L10N = True
-
 USE_TZ = True
 
-# Production settings
+# Security settings for production
 if not DEBUG:
     SECURE_BROWSER_XSS_FILTER = True
     SECURE_SSL_REDIRECT = True
@@ -238,4 +192,10 @@ if not DEBUG:
     SECURE_CONTENT_TYPE_NOSNIFF = True
     SESSION_COOKIE_SECURE = True
     CSRF_COOKIE_SECURE = True
-    SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+    SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")  # Fixed syntax
+
+# CORS Configuration
+CORS_ALLOWED_ORIGINS = [
+    "https://hr.diremfi.com",
+    "http://localhost:8000",
+]
